@@ -28,15 +28,11 @@ function App() {
   };
 
   return (
-    <React.Fragment>
-      <div>
-        <FormGroup row={false}>
-          <DomSwitch name="checkedA" label="A" on={state.checkedA} onChange={handleChangeSwitch} />
-          <DomSwitch name="checkedB" label="B" on={state.checkedB} onChange={handleChangeSwitch} />
-        </FormGroup>
-        <DomSliderLight name="TODO" label="Zithoek" disabled={!state.checkedB} value={value} onChange={handleChangeSlider} />
-      </div>
-    </React.Fragment>
+    <div>
+      <DomSwitch name="checkedA" label="A" on={state.checkedA} onChange={handleChangeSwitch} />
+      <DomSwitch name="checkedB" label="B" on={state.checkedB} onChange={handleChangeSwitch} />
+      <DomSliderLight name="TODO" label="Zithoek" disabled={!state.checkedB} value={value} onChange={handleChangeSlider} />
+    </div>
   );
 }
 
