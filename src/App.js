@@ -6,11 +6,9 @@ import Switch from '@material-ui/core/Switch';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Slider from '@material-ui/core/Slider';
-import VolumeDown from '@material-ui/icons/VolumeDown';
-import VolumeUp from '@material-ui/icons/VolumeUp';
-import Brightness1 from '@material-ui/icons/WbSunny';
-import Brightness3 from '@material-ui/icons/Brightness3';
 
+import DomSwitch from './DomSwitch.jsx';
+import DomSliderLight from './DomSlider.jsx';
 
 function App() {
 
@@ -33,35 +31,10 @@ function App() {
     <React.Fragment>
       <div>
         <FormGroup row={false}>
-          <FormControlLabel
-            control={<Switch checked={state.checkedA} onChange={handleChangeSwitch} name="checkedA" />}
-            label="Primary"
-          />
-          <FormControlLabel
-            control={<Switch disabled={false} checked={state.checkedB} onChange={handleChangeSwitch} name="checkedB" />}
-            label="Secondary"
-          />
+          <DomSwitch name="checkedA" label="A" on={state.checkedA} onChange={handleChangeSwitch} />
+          <DomSwitch name="checkedB" label="B" on={state.checkedB} onChange={handleChangeSwitch} />
         </FormGroup>
-      </div>
-      <div>
-        <Typography id="continuous-slider" gutterBottom>
-          Volume
-      </Typography>
-        <Grid container spacing={2}>
-          <Grid item>
-            <Brightness3 />
-          </Grid>
-          <Grid item xs>
-            <Slider disabled={!state.checkedB} value={value} onChange={handleChangeSlider} aria-labelledby="continuous-slider"/>
-          </Grid>
-          <Grid item>
-            <Brightness1 />
-          </Grid>
-        </Grid>
-        <Typography id="disabled-slider" gutterBottom>
-          Disabled slider
-      </Typography>
-        <Slider disabled defaultValue={30} aria-labelledby="disabled-slider" />
+        <DomSliderLight name="TODO" label="Zithoek" disabled={!state.checkedB} value={value} onChange={handleChangeSlider} />
       </div>
     </React.Fragment>
   );
