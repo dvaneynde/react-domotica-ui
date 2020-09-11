@@ -1,11 +1,4 @@
 import React from 'react';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
-
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import Slider from '@material-ui/core/Slider';
 
 import DomSwitch from './DomSwitch.jsx';
 import DomSliderLight from './DomSlider.jsx';
@@ -14,24 +7,35 @@ function App() {
 
   const [value, setValue] = React.useState(30);
 
-  const [state, setState] = React.useState({
-    checkedA: true,
-    checkedB: false,
-  });
+  const initialStates = () => {
+    var is = [];
+    for (var i = 0; i < 10; i++) {
+      is[i] = { name: "checked" + i, state: (i % 2 == 0) }
+    }
+    return is;
+  };
+
+  const [states, setStates] = React.useState(initialStates());
 
   const handleChangeSlider = (event, newValue) => {
     setValue(newValue);
   };
 
-  const handleChangeSwitch = (event) => {
-    setState({ ...state, [event.target.name]: event.target.checked });
+  const handleToggleSwitch = (event) => {
+    debugger
+    const newStates = states.map(s => ((s.name==event.target.name) ? {...s, state : event.target.checked} :s));
+    setStates(newStates);
   };
+
+  function createList() {
+    console.log(initialStates())
+    return states.map(s => (<DomSwitch name={s.name} label={s.name} on={s.state} onChange={handleToggleSwitch} />));
+  }
 
   return (
     <div>
-      <DomSwitch name="checkedA" label="A" on={state.checkedA} onChange={handleChangeSwitch} />
-      <DomSwitch name="checkedB" label="B" on={state.checkedB} onChange={handleChangeSwitch} />
-      <DomSliderLight name="TODO" label="Zithoek" disabled={!state.checkedB} value={value} onChange={handleChangeSlider} />
+      {createList()}
+      <DomSliderLight name="TODO" label="Zithoek" disabled={!states[9].state} value={value} onChange={handleChangeSlider} />
     </div>
   );
 }
