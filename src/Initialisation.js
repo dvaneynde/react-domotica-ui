@@ -20,6 +20,16 @@ const initialStatesString = `
         "on": true
     },
     {
+        "name": "LichtZithoek",
+        "type": "DimmedLamp",
+        "description": "Zithoek",
+        "groupName": "Beneden",
+        "groupSeq": 4,
+        "status": "ON",
+        "on": true,
+        "level": 75
+    },
+    {
         "name": "VentilatorWC0",
         "type": "Fan",
         "description": "Ventilator WC",

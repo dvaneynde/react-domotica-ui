@@ -1,30 +1,38 @@
 import React from 'react';
 
 import DomSwitch from './DomSwitch.jsx';
+import DomDimmedLamp from './DomDimmedLamp';
 import DomSliderLight from './DomSlider.jsx';
-import {initialStates } from './Initialisation.js';
+import { initialStates } from './Initialisation.js';
 
 function App() {
+  // State
+  const [controls, setControls] = React.useState(initialStates);
 
-  const [value, setValue] = React.useState(30);
 
-  const [states, setStates] = React.useState(initialStates);
-
-  const handleChangeSlider = (event, newValue) => {
-    setValue(newValue);
-  };
-
+  // Event Handlers
   const handleToggleSwitch = (event) => {
-    //debugger
-    const newStates = states.map(s => ((s.name === event.target.name) ? {...s, on : event.target.checked} :s));
-    setStates(newStates);
+    const newStates = controls.map(c => ((c.name === event.target.name) ? { ...c, on: event.target.checked } : c));
+    setControls(newStates);
   };
 
+  const handleOnLevel = name => (event, newValue) => {
+    debugger
+    const newStates = controls.map(c => ((c.name === name) ? { ...c, level: newValue } : c));
+    setControls(newStates);
+  }
+
+
+  // View
   function viewControl(control) {
     switch (control.type) {
       case "Lamp":
-        debugger
-        return <DomSwitch name={control.name} checked={control.on} onChange={handleToggleSwitch} label={control.description}/>;
+      case "Fan":
+        return <DomSwitch name={control.name} checked={control.on} onChange={handleToggleSwitch} label={control.description} />;
+
+      case "DimmedLamp":
+        return <DomDimmedLamp name={control.name} on={control.on} level={control.level} onSwitch={handleToggleSwitch} onLevel={handleOnLevel(control.name)} label={control.description} />;
+
       default:
         return <div>{control.type} is not implemented yet</div>
     }
@@ -32,10 +40,8 @@ function App() {
 
   function viewControls() {
     //debugger
-    return states.map(s => viewControl(s));
+    return controls.map(control => viewControl(control));
   }
-
-  //  <DomSliderLight name="TODO" label="Zithoek" disabled={!states[9].state} value={value} onChange={handleChangeSlider} />
 
   return (
     <div>
