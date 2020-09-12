@@ -8,7 +8,7 @@ function DomSwitch(props) {
     return (
         <div>
             <FormControlLabel
-                control={<Switch checked={props.on} onChange={e => props.onChange(e)} name={props.name} />}
+                control={<Switch checked={props.checked} onChange={e => props.onChange(e)} name={props.name} />}
                 label={props.label}
             />
         </div>
