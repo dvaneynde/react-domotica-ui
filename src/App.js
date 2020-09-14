@@ -3,28 +3,17 @@ import React from 'react';
 import DomSwitch from './DomSwitch.jsx';
 import DomDimmedLamp from './DomDimmedLamp';
 import { initialStates } from './Initialisation.js';
-import { makeStyles } from '@material-ui/core/styles';
+import { useStyles } from './Initialisation';
 
 import { Collapse } from '@material-ui/core';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
-
+import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 
-
-// Styles
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: '100%',
-    maxWidth: 360,
-    backgroundColor: theme.palette.background.paper,
-  },
-  nested: {
-    paddingLeft: theme.spacing(4)
-  },
-}));
 
 function App() {
   const classes = useStyles();
@@ -49,7 +38,7 @@ function App() {
     setGroups(newGroups);
   }
 
-  
+
   // View
   function viewControl(control) {
     switch (control.type) {
@@ -72,13 +61,14 @@ function App() {
     return <List component="nav" aria-labelledby="nested-list-subheader" className={classes.root}>
       {groups.map(group =>
         <>
-          <ListItem button disableGutters onClick={handleCollapse(group.groupName)}>
+          <ListItem button onClick={handleCollapse(group.groupName)}>
+            <ListItemIcon><FormatListBulleted /></ListItemIcon>
             <ListItemText primary={group.groupName} />
             {group.display ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
           <Collapse in={group.display} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {group.controlNames.map(cn => <span disableGutters className={classes.nested}>{viewControl(controlByName(cn))}</span>)}
+            <List component="div" >
+              {group.controlNames.map(cn => <span>{viewControl(controlByName(cn))}</span>)}
             </List>
           </Collapse>
         </>
