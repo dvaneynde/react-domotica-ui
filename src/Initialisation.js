@@ -33,7 +33,7 @@ const initialStatesString = `
         "name": "VentilatorWC0",
         "type": "Fan",
         "description": "Ventilator WC",
-        "groupName": "",
+        "groupName": "Nutsruimtes",
         "groupSeq": 0,
         "status": "OFF",
         "on": false
