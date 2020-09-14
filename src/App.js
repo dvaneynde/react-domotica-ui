@@ -31,26 +31,25 @@ function App() {
 
   // State
   const [controls, setControls] = React.useState(initialStates);
-  const [groups] = React.useState(() => createGroups(controls));
-
-  // Temp
-  const [open, setOpen] = React.useState(true);
-  const handleCollapse = () => {
-    setOpen(!open);
-  };
+  const [groups, setGroups] = React.useState(() => createGroups(controls));
 
   // Event Handlers
   const handleToggleSwitch = (event) => {
     const newStates = controls.map(c => ((c.name === event.target.name) ? { ...c, on: event.target.checked } : c));
     setControls(newStates);
-  };
+  }
 
   const handleOnLevel = name => (event, newValue) => {
     const newStates = controls.map(c => ((c.name === name) ? { ...c, level: newValue } : c));
     setControls(newStates);
   }
 
+  const handleCollapse = groupName => () => {
+    const newGroups = groups.map(c => ((c.groupName === groupName) ? { ...c, display: !c.display } : c));
+    setGroups(newGroups);
+  }
 
+  
   // View
   function viewControl(control) {
     switch (control.type) {
@@ -73,11 +72,11 @@ function App() {
     return <List component="nav" aria-labelledby="nested-list-subheader" className={classes.root}>
       {groups.map(group =>
         <>
-          <ListItem button disableGutters onClick={handleCollapse}>
+          <ListItem button disableGutters onClick={handleCollapse(group.groupName)}>
             <ListItemText primary={group.groupName} />
-            {open ? <ExpandLess /> : <ExpandMore />}
+            {group.display ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
-          <Collapse in={open} timeout="auto" unmountOnExit>
+          <Collapse in={group.display} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
               {group.controlNames.map(cn => <span disableGutters className={classes.nested}>{viewControl(controlByName(cn))}</span>)}
             </List>
@@ -105,8 +104,8 @@ function App() {
   }
 ]
 */
-
 function createGroups(controls) {
+
   function groupComparer(a, b) {
     var compGc = 0;
     if (a < b) compGc = -1; else if (a > b) compGc = 1;
@@ -122,7 +121,7 @@ function createGroups(controls) {
   l2.pop();
   // now whenever prevGroupName != groupName, a new group starts
   const l3 = l2.reduce((acc, item) => {
-    if (item[0] != item[1].groupName) {
+    if (item[0] !== item[1].groupName) {
       const newGroup = { groupName: item[1].groupName, display: true, controlNames: [] };
       acc.push(newGroup);
     }
