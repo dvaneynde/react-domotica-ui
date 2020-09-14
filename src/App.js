@@ -2,14 +2,42 @@ import React from 'react';
 
 import DomSwitch from './DomSwitch.jsx';
 import DomDimmedLamp from './DomDimmedLamp';
-import DomSliderLight from './DomSlider.jsx';
 import { initialStates } from './Initialisation.js';
+import { makeStyles } from '@material-ui/core/styles';
+
+import { Collapse } from '@material-ui/core';
+import ExpandLess from '@material-ui/icons/ExpandLess';
+import ExpandMore from '@material-ui/icons/ExpandMore';
+
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+
+
+// Styles
+const useStyles = makeStyles((theme) => ({
+  root: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor: theme.palette.background.paper,
+  },
+  nested: {
+    paddingLeft: theme.spacing(4)
+  },
+}));
 
 function App() {
+  const classes = useStyles();
+
   // State
   const [controls, setControls] = React.useState(initialStates);
-  const [groups, setGroups] = React.useState(() => createGroups(controls));
+  const [groups] = React.useState(() => createGroups(controls));
 
+  // Temp
+  const [open, setOpen] = React.useState(true);
+  const handleCollapse = () => {
+    setOpen(!open);
+  };
 
   // Event Handlers
   const handleToggleSwitch = (event) => {
@@ -42,13 +70,21 @@ function App() {
 
   function viewControls() {
     //debugger
-    return groups.map(group =>
-      <div>{group.groupName}
-        <div>{
-          group.controlNames.map(cn => <span>{viewControl(controlByName(cn))}</span>)
-        }</div>
-      </div>
-    );
+    return <List component="nav" aria-labelledby="nested-list-subheader" className={classes.root}>
+      {groups.map(group =>
+        <>
+          <ListItem button disableGutters onClick={handleCollapse}>
+            <ListItemText primary={group.groupName} />
+            {open ? <ExpandLess /> : <ExpandMore />}
+          </ListItem>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              {group.controlNames.map(cn => <span disableGutters className={classes.nested}>{viewControl(controlByName(cn))}</span>)}
+            </List>
+          </Collapse>
+        </>
+      )}
+    </List>
   }
 
   return (
@@ -69,11 +105,6 @@ function App() {
   }
 ]
 */
-function groupComparer(a, b) {
-  var compGc = 0;
-  if (a < b) compGc = -1; else if (a > b) compGc = 1;
-  return a.groupName.localeCompare(b.groupName) * 10 + compGc;
-}
 
 function createGroups(controls) {
   function groupComparer(a, b) {

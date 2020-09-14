@@ -1,17 +1,17 @@
 import React from 'react';
-import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
+import ListItem from '@material-ui/core/ListItem';
 
 function DomSwitch(props) {
 
     return (
-        <div>
+        <ListItem>
             <FormControlLabel
                 control={<Switch checked={props.checked} onChange={e => props.onChange(e)} name={props.name} />}
                 label={props.label}
             />
-        </div>
+        </ListItem>
     );
 }
 
