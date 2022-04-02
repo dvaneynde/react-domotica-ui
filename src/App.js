@@ -2,7 +2,7 @@ import React from 'react';
 
 import DomSwitch from './DomSwitch.jsx';
 import DomDimmedLamp from './DomDimmedLamp';
-import { initialStates } from './Initialisation.js';
+import { initialStates, initialStatesFull } from './Initialisation.js';
 import { useStyles } from './Initialisation';
 
 import { Collapse } from '@material-ui/core';
@@ -19,25 +19,30 @@ function App() {
   const classes = useStyles();
 
   // State
-  const [controls, setControls] = React.useState(initialStates);
+  const [controls, setControls] = React.useState(initialStatesFull);
+  //const [controls, setControls] = React.useState(() => getStatuses());
   const [groups, setGroups] = React.useState(() => createGroups(controls));
+  //const [statuses, setStatuses] = React.useState(() => getStatuses());
+
 
   // Event Handlers
   const handleToggleSwitch = (event) => {
     const newStates = controls.map(c => ((c.name === event.target.name) ? { ...c, on: event.target.checked } : c));
+    // TODO function to set state
     setControls(newStates);
   }
 
   const handleOnLevel = name => (event, newValue) => {
     const newStates = controls.map(c => ((c.name === name) ? { ...c, level: newValue } : c));
+    // TODO function to set state
     setControls(newStates);
   }
 
   const handleCollapse = groupName => () => {
     const newGroups = groups.map(c => ((c.groupName === groupName) ? { ...c, display: !c.display } : c));
+    // TODO function to set state
     setGroups(newGroups);
   }
-
 
   // View
   function viewControl(control) {
@@ -83,6 +88,20 @@ function App() {
   );
 }
 
+async function getStatuses() {
+  const response =
+    await fetch("http://192.168.0.10:8080/rest/statuses",
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+
+  // const str = await response.text();
+  // console.log("Received text: "+str);
+  const result = await response.json()
+  var str = JSON.stringify(result, null, 2); // spacing level = 2
+  console.log("Result: " + str);
+  //console.log("Result: "+result);
+  return result;
+}
 
 // Groups
 /*
@@ -98,25 +117,34 @@ function createGroups(controls) {
 
   function groupComparer(a, b) {
     var compGc = 0;
-    if (a < b) compGc = -1; else if (a > b) compGc = 1;
-    return a.groupName.localeCompare(b.groupName) * 10 + compGc;
+    compGc = a.groupName.localeCompare(b.groupName);
+    if (compGc ==0) {
+      var aSeq = a.groupSeq;
+      var bSeq = b.groupSeq;
+      if (aSeq < bSeq) compGc = -1; else if (aSeq > bSeq) compGc = +1;
+    }
+    return compGc;
   }
 
+  // TODO werkt niet als groupName === ""
+
+  // l1 is controls projection + sorted by group-name, and then by group-seq
   const l0 = controls.map(c => { var obj = { groupName: c.groupName, groupSeq: c.groupSeq, name: c.name }; return obj; });
   const l1 = l0.sort(groupComparer);
-  // l1 is sorted by group-name, and then by group-seq; so now group them
+  // now group them; first l2 contains [previousGroupname, {group.name, ...}]
   var groupNames = l1.map(c => c.groupName);
   groupNames.unshift("");
   var l2 = groupNames.map(function (prevGroupName, i) { return [prevGroupName, l1[i]]; });
-  l2.pop();
-  // now whenever prevGroupName != groupName, a new group starts
+  l2.pop(); // last one has item[1]==undefined, so ok
+  // now whenever item[0].previousGroupname != item[1].groupName, a new group starts
   const l3 = l2.reduce((acc, item) => {
     if (item[0] !== item[1].groupName) {
       const newGroup = { groupName: item[1].groupName, display: true, controlNames: [] };
       acc.push(newGroup);
     }
     const last = acc[acc.length - 1];
-    last.controlNames.push(item[1].name);
+    console.log("last="+last+", item[1]="+item[1]);
+    last.controlNames.push(item[1].name); // TODO HIER GAAT HET MIS!!! als ergens groupName=="", last is undefined
     return acc;
   }, []);
   return l3;
