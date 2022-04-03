@@ -126,14 +126,12 @@ function createGroups(controls) {
     return compGc;
   }
 
-  // TODO werkt niet als groupName === ""
-
   // l1 is controls projection + sorted by group-name, and then by group-seq
   const l0 = controls.map(c => { var obj = { groupName: c.groupName, groupSeq: c.groupSeq, name: c.name }; return obj; });
   const l1 = l0.sort(groupComparer);
   // now group them; first l2 contains [previousGroupname, {group.name, ...}]
   var groupNames = l1.map(c => c.groupName);
-  groupNames.unshift("");
+  groupNames.unshift("DummyToForceNewGroupAtFirstIteration");
   var l2 = groupNames.map(function (prevGroupName, i) { return [prevGroupName, l1[i]]; });
   l2.pop(); // last one has item[1]==undefined, so ok
   // now whenever item[0].previousGroupname != item[1].groupName, a new group starts
@@ -144,7 +142,7 @@ function createGroups(controls) {
     }
     const last = acc[acc.length - 1];
     console.log("last="+last+", item[1]="+item[1]);
-    last.controlNames.push(item[1].name); // TODO HIER GAAT HET MIS!!! als ergens groupName=="", last is undefined
+    last.controlNames.push(item[1].name);
     return acc;
   }, []);
   return l3;

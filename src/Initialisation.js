@@ -149,7 +149,7 @@ export const useStyles = makeStyles((theme) => ({
       "name": "VentilatorWC0",
       "type": "Fan",
       "description": "Ventilator WC",
-      "groupName": "TEST",
+      "groupName": "",
       "groupSeq": 0,
       "status": "OFF",
       "on": false
@@ -196,7 +196,7 @@ export const useStyles = makeStyles((theme) => ({
       "name": "VentilatorBadk0",
       "type": "Fan",
       "description": "Ventilator Badkamer",
-      "groupName": "TEST",
+      "groupName": "",
       "groupSeq": 0,
       "status": "OFF",
       "on": false
