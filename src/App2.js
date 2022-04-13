@@ -17,27 +17,75 @@ import ListItemText from '@material-ui/core/ListItemText';
 
 function App() {
 
+  const classes = useStyles();
+
   // State
   const [controls, setControls] = React.useState([]);
   const [groups, setGroups] = React.useState(() => createGroups(controls));
 
   React.useEffect(() => {
-    async function fetchStatusesAndSetControl() {
-      const statuses = await fetchStatuses();
-      setControls(statuses);
-      //setGroups(createGroups(statuses));
-    }
-    fetchStatusesAndSetControl();
-  }, []);
+    fetchStatuses();
+    setGroups(createGroups());
+  });
+
+  //const [controls, setControls] = React.useState(() => getStatuses());
+  //const [statuses, setStatuses] = React.useState(() => getStatuses());
+
 
   // Event Handlers
+  const handleToggleSwitch = (event) => {
+    const newStates = controls.map(c => ((c.name === event.target.name) ? { ...c, on: event.target.checked } : c));
+    // TODO function to set state
+    setControls(newStates);
+  }
+
+  const handleOnLevel = name => (event, newValue) => {
+    const newStates = controls.map(c => ((c.name === name) ? { ...c, level: newValue } : c));
+    // TODO function to set state
+    setControls(newStates);
+  }
+
+  const handleCollapse = groupName => () => {
+    const newGroups = groups.map(c => ((c.groupName === groupName) ? { ...c, display: !c.display } : c));
+    // TODO function to set state
+    setGroups(newGroups);
+  }
 
   // View
+  function viewControl(control) {
+    switch (control.type) {
+      case "Lamp":
+      case "Fan":
+        return <DomSwitch name={control.name} checked={control.on} onChange={handleToggleSwitch} label={control.description} />;
+
+      case "DimmedLamp":
+        return <DomDimmedLamp name={control.name} on={control.on} level={control.level} onSwitch={handleToggleSwitch} onLevel={handleOnLevel(control.name)} label={control.description} />;
+
+      default:
+        return <div>{control.type} is not implemented yet</div>
+    }
+  }
+
+  const controlByName = (name) => controls.filter(c => c.name === name)[0];
+
   function viewControls() {
-    const txtControls = JSON.stringify(controls, null, 2);
-    const groups = createGroups(controls);
-    const txtGroups = JSON.stringify(groups, null, 2);
-    return <div><h2>Controls</h2><p>{txtControls}</p><h2>Groups</h2><p>{txtGroups}</p></div>;
+    //debugger
+    return <List component="nav" aria-labelledby="nested-list-subheader" className={classes.root}>
+      {groups.map(group =>
+        <>
+          <ListItem button onClick={handleCollapse(group.groupName)}>
+            <ListItemIcon><FormatListBulleted /></ListItemIcon>
+            <ListItemText primary={group.groupName} />
+            {group.display ? <ExpandLess /> : <ExpandMore />}
+          </ListItem>
+          <Collapse in={group.display} timeout="auto" unmountOnExit>
+            <List component="div" >
+              {group.controlNames.map(cn => <span>{viewControl(controlByName(cn))}</span>)}
+            </List>
+          </Collapse>
+        </>
+      )}
+    </List>
   }
 
   return (
@@ -55,12 +103,12 @@ function App() {
         { headers: { 'Content-Type': 'application/json' } }
       );
 
+    // const str = await response.text();
+    // console.log("Received text: "+str);
     const result = await response.json()
-    /*
     var str = JSON.stringify(result, null, 2); // spacing level = 2
     console.log("Result: " + str);
-    */
-    // setControls(result);
+    //console.log("Result: "+result);
     return result;
   }
 
