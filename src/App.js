@@ -17,11 +17,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 
 function App() {
 
+  const urlHost = "192.168.0.10:8080";
   const classes = useStyles();
 
-
   // State
-  
+
+  const webSocket = React.useRef(null);
   const [controls, setControls] = React.useState([]);
   const [groups, setGroups] = React.useState(() => createGroups(controls));
 
@@ -38,6 +39,16 @@ function App() {
   }, [controls]);
 
 
+  React.useEffect(() => {
+    webSocket.current = new WebSocket("ws://"+urlHost+"/status/");
+    // webSocket.current.onmessage = (message) => {
+    //   setMessages(prev => [...prev, message.data]);
+    // };
+    webSocket.current.onmessage = (message) => {
+      console.log("websocket got: "+message.data);
+    };
+    return () => webSocket.current.close();
+  }, []);
 
   // Event Handlers
 
@@ -89,7 +100,7 @@ function App() {
     //debugger
     return <List component="nav" aria-labelledby="nested-list-subheader" className={classes.root}>
       {groups.map(group =>
-        <>
+        <span key={group.groupName}>
           <ListItem button onClick={handleCollapse(group.groupName)}>
             <ListItemIcon><FormatListBulleted /></ListItemIcon>
             <ListItemText primary={group.groupName} />
@@ -97,10 +108,10 @@ function App() {
           </ListItem>
           <Collapse in={group.display} timeout="auto" unmountOnExit>
             <List component="div" >
-              {group.controlNames.map(cn => <span>{viewControl(controlByName(cn))}</span>)}
+              {group.controlNames.map(cn => <span key={controlByName(cn).name}>{viewControl(controlByName(cn))}</span>)}
             </List>
           </Collapse>
-        </>
+        </span>
       )}
     </List>
   }
@@ -145,7 +156,7 @@ function App() {
     function groupComparer(a, b) {
       var compGc = 0;
       compGc = a.groupName.localeCompare(b.groupName);
-      if (compGc == 0) {
+      if (compGc === 0) {
         var aSeq = a.groupSeq;
         var bSeq = b.groupSeq;
         if (aSeq < bSeq) compGc = -1; else if (aSeq > bSeq) compGc = +1;
@@ -168,7 +179,6 @@ function App() {
         acc.push(newGroup);
       }
       const last = acc[acc.length - 1];
-      console.log("last=" + last + ", item[1]=" + item[1]);
       last.controlNames.push(item[1].name);
       return acc;
     }, []);
