@@ -14,30 +14,16 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 
-/*
-TODO in GET komen ook LichtNacht en 2 Ventilators mee, in WebSocket niet? Dat geeft problemen blijkbaar in websocket, maar begrijp niet waarom.
-Waarschijnlijk:
-1. Controls worden via GET geladen, inclusief LichtNacht en Ventilator. Groups worden daarop gebouwed.
-2. Websocket laadt nieuwe statusen, maar zonder LichtNacht en Ventilator. View wordt gerenderd, maar Groups zijn nog niet aangepast!
-3. Groups wordt dan uitgevoerd.
-4. Weer Websocket, maar nu geen problemen meer want Groups is nu zonder LichtNacht en Ventilator
-Oplossingen:
-- Groups berekenen samen met GET of WebSocket update (maar dat werkte niet, Promise gedoe waarschijnlijk?). Is ook niet goed voor volgende probleem, Groups moet maar 1 keer bepaald.
-- Server side aanpassen.
-- Uitfilteren.
-Noot: VentilatorWC en LichtNacht hebben geen groupName !!! (lege string)
-
-TODO groepen moeten behouden blijven na 1e fetch, of toch de open/closed status.
-Oplossingen:
-- Groups enkel bij GET bepalen, en dan niet meer?
+/* IMPORTANT !!!
+Groups collpse, but switches do not react since no real update sent and websocket resets status immediately.
+Comment out websocket start/stop to see controls switching on/off.
 */
 
-/*
-Alternatief:
-- groups en controls zijn null initieel; er wordt niets getoond op pagina
-- websocket wordt opgestart, controls wordt ingevuld; nog geen groups dus niks tonen
-- groups zijn gemaakt, nu wel tonen
-Noot: groups mag niet afhankelijk zijn van controls! Of toch niet de status open/dicht (want als controls geladen worden groups geregenereerd vrees ik).
+/* TODO 
+VentilatorWC en LichtNacht hebben bij GET geen groupName, het is een lege string! Dat gaf een hoop problemen, dat heb ik opgelost.
+Maar Websocket stuurt ze helemaal niet door - en dat gaf dan weer andere problemen.
+Indien groupName leeg is worden ze eruitgefilbered by fetch. Dus niet zichtbaar meer maar ook geen probleem.
+Moet ten gronde opgelost op server, ook rijker model nodig (r/o vs r/w etc.).
 */
 
 
@@ -46,25 +32,28 @@ function App() {
   const urlHost = "192.168.0.10";
   const classes = useStyles();
 
+
+
   // State
 
   const webSocket = React.useRef(null);
   const [controls, setControls] = React.useState([]);
-  const [groups, setGroups] = React.useState(() => createGroups(controls));
+  const [groups, setGroups] = React.useState([]);
 
+  // Get first bunch of Controls, and build Groups. This happens only once: groups are built only once, and control statuses are fetched from websocket.
+  // React Assumption: if no [] at end then executed at each render, if [] at end then only once (when mounted), if [abc] then if abc changes.
   React.useEffect(() => {
-    async function fetchStatusesAndSetControl() {
-      const statuses = await fetchControls();
-      setControls(statuses);
+    async function fetchStatusesAndSetControlsAndGroups() {
+      const newControls = await fetchControls();
+      setControls(newControls);
+      setGroups(createGroups(newControls)); // cannot use 'controls' yet, only available after render?
     }
-    fetchStatusesAndSetControl();
+    fetchStatusesAndSetControlsAndGroups();
+    console.log("fetchStatusesAndSetControlsAndGroups() called.");
   }, []);
 
-  // creates groups if groups changed
-  React.useEffect(() => {
-    setGroups(createGroups(controls));
-  }, [controls]);
 
+  // Start and stop websocket.
   React.useEffect(() => {
     webSocket.current = new WebSocket("ws://" + urlHost + "/status/");
     webSocket.current.onmessage = (message) => {
@@ -72,9 +61,13 @@ function App() {
       const newControls = JSON.parse(message.data);
       //console.log("websocket newControls type=" + typeof newControls + "\nwebsocket newControls message=" + JSON.stringify(newControls));
       setControls(newControls);
+      //console.log("websocket onmessage() called.");
     };
+    console.log("webscoket started");
     return () => webSocket.current.close();
   }, []);
+
+
 
   // Event Handlers
 
@@ -178,7 +171,7 @@ function App() {
 
 
 
-  // other
+  // Other
 
   async function fetchControls() {
     const response =
@@ -187,18 +180,19 @@ function App() {
       );
 
     const result = await response.json()
+    const filteredResult = result.filter(c => c.groupName != "");
     // console.log("Result: " + JSON.stringify(result, null, 2));
-    return result;
+    return filteredResult;
   }
 
   // Groups
-  /*
+  /* example groups:
   [
     {
       groupName: "NutsRuimtes",
       display: true,
       controlNames: ["VentilatorWC", ...]
-    }
+    }, ...
   ]
   */
   function createGroups(controls) {

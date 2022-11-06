@@ -4,10 +4,15 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-ReactDOM.render(
+/* TODO:
   <React.StrictMode>
     <App />
   </React.StrictMode>,
+  For now not added since error and don't understand yet...
+*/
+
+ReactDOM.render(
+    <App />, 
   document.getElementById('root')
 );
 
