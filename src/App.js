@@ -2,7 +2,7 @@ import React from 'react';
 
 import DomSwitch from './DomSwitch.jsx';
 import DomDimmedLamp from './DomDimmedLamp';
-import { initialStates, initialStatesFull } from './Initialisation.js';
+// import { initialStates, initialStatesFull } from './Initialisation.js';
 import { useStyles } from './Initialisation';
 
 import { Collapse } from '@material-ui/core';
@@ -32,9 +32,18 @@ Oplossingen:
 - Groups enkel bij GET bepalen, en dan niet meer?
 */
 
+/*
+Alternatief:
+- groups en controls zijn null initieel; er wordt niets getoond op pagina
+- websocket wordt opgestart, controls wordt ingevuld; nog geen groups dus niks tonen
+- groups zijn gemaakt, nu wel tonen
+Noot: groups mag niet afhankelijk zijn van controls! Of toch niet de status open/dicht (want als controls geladen worden groups geregenereerd vrees ik).
+*/
+
+
 function App() {
 
-  const urlHost = "192.168.0.10:8080";
+  const urlHost = "192.168.0.10";
   const classes = useStyles();
 
   // State
@@ -51,6 +60,7 @@ function App() {
     fetchStatusesAndSetControl();
   }, []);
 
+  // creates groups if groups changed
   React.useEffect(() => {
     setGroups(createGroups(controls));
   }, [controls]);
@@ -82,7 +92,6 @@ function App() {
 
   const handleCollapse = groupName => () => {
     const newGroups = groups.map(c => ((c.groupName === groupName) ? { ...c, display: !c.display } : c));
-    // TODO function to set state
     setGroups(newGroups);
   }
 
@@ -111,18 +120,18 @@ function App() {
   }
 
   const controlByName = (name) => controls.filter(c => c.name === name)[0];
-  
+
   function viewControlSpan(name, index) {
     let control = controlByName(name);
     if (control === undefined) {
-      console.log("Problem: control with name "+name+" not found.")
+      console.log("Problem: control with name " + name + " not found.")
       return <span key={index}><p>Problem control not found.</p></span>
     } else {
       let controlName = control.name;
       if (controlName === undefined) {
-        console.log("Problem: control with name "+name+" is found, but its name is "+control.name);
+        console.log("Problem: control with name " + name + " is found, but its name is " + control.name);
         return <span key={index}><p>Problem control.name not found.</p></span>
-      }else 
+      } else
         return <span key={control.name}>{viewControl(control)}</span>
     }
   }
@@ -130,7 +139,7 @@ function App() {
 
   function viewControls(group) {
     return <List component="div" >
-      {group.controlNames.map((cn,index) => viewControlSpan(cn,index))}
+      {group.controlNames.map((cn, index) => viewControlSpan(cn, index))}
     </List>
   }
 
@@ -173,7 +182,7 @@ function App() {
 
   async function fetchControls() {
     const response =
-      await fetch("http://192.168.0.10:8080/rest/statuses",
+      await fetch("http://" + urlHost + "/rest/statuses",
         { headers: { 'Content-Type': 'application/json' } }
       );
 
